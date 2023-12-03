@@ -1,0 +1,7 @@
+__pycache__
+.jukit
+.egg-info
+build
+.git
+sb.py
+res
