@@ -173,7 +173,7 @@ class TaskModule():
                         break
         else:
             if val_loader:
-                self._do_epoch('val', val_loader, fold, -1)
+                self.val_named_metrics[-1] = self._do_epoch('val', val_loader, fold, -1)
 
         if train_loader:
             self._load_ckpt(fold, None)
