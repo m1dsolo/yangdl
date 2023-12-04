@@ -223,7 +223,7 @@ class TaskModule():
         """Process one batch of data."""
         env.step = step
         with autocast():
-            batch = self._batch_to_cuda(batch)
+            batch = self._data_to_cuda(batch)
             return getattr(self.model_module, f'{stage}_step')(batch)
 
     def _save_ckpt(
@@ -305,24 +305,16 @@ class TaskModule():
             if step is not None and metric.freq[0] == 'step' and step % metric.freq[1] == 0:
                 self.tensorboard_logger.log(metric, stage, step)
     
-    def _batch_to_cuda(self, batch):
-        """Move cpu data in batch to gpu.
-
-        TODO: Refactor this part.
-        """
-        if isinstance(batch, Tensor):
-            batch = batch.cuda()
-        elif isinstance(batch, dict):
-            for key, val in batch.items():
-                if isinstance(val, Tensor):
-                    batch[key] = val.cuda()
-        elif isinstance(batch, list):
-            if isinstance(batch[0], (list, tuple)):
-                batch = list(list(map(lambda x: x.cuda() if isinstance(x, Tensor) else x, item)) for item in batch)
-            else:
-                batch = [(item.cuda() if isinstance(item, Tensor) else item) for item in batch]
+    def _data_to_cuda(self, data):
+        """Move cpu data to gpu."""
+        if isinstance(data, Tensor):
+            return data.cuda()
+        elif isinstance(data, list):
+            return [self._data_to_cuda(val) for val in data]
+        elif isinstance(data, tuple):
+            return tuple(self._data_to_cuda(val) for val in data)
+        elif isinstance(data, dict):
+            return {key: self._data_to_cuda(val) for key, val in data.items()}
         else:
-            raise Exception
-
-        return batch
+            return data
 
