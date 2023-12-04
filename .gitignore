@@ -1,7 +1,9 @@
 __pycache__
 .jukit
-.egg-info
+*egg-info
 build
 .git
 sb.py
 res
+dist
+
