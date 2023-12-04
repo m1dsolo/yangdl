@@ -1,8 +1,12 @@
 import os
+import random
 import shutil
+from typing import Optional
+
+import numpy as np
+import torch
 
 from yangdl.utils.python import get_caller_file_name
-from yangdl.utils.torch import set_seed
 
 
 __all__ = [
@@ -36,10 +40,23 @@ class Env:
             from yangdl.core.logger import logger
             logger.handler.set_file_name(f'{val}/log/log.txt')
         elif key == 'seed':
-            set_seed(val)
+            self._set_seed(val)
 
     def __getattr__(self, key):
         return None
+
+    @staticmethod
+    def _set_seed(seed: Optional[int] = None):
+        if seed is None:
+            return
+        random.seed(seed)
+        os.environ['PYTHONHASHSEED'] = str(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed) # if you are using multi-GPU.
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
 
 
 env = Env()
