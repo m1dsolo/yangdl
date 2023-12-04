@@ -76,7 +76,7 @@ res/tmp
 ```txt
 python>=3.10
 ```
-
+and
 ```txt
 numpy
 scikit-learn
@@ -87,6 +87,10 @@ torch
 
 ## Install
 
+```bash
+pip install yangdl
+```
+or
 ```bash
 git clone https://github.com/m1dsolo/yangdl.git
 cd yangdl
