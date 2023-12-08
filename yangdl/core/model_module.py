@@ -119,8 +119,8 @@ class ModelModule():
         ckpt = {}
         for name, model in self.named_models.items():
             ckpt[name] = model.state_dict()
-        for name, optimizer in self.named_optimizers.items():
-            ckpt[name] = optimizer.state_dict()
+        # for name, optimizer in self.named_optimizers.items():
+            # ckpt[name] = optimizer.state_dict()
 
         torch.save(ckpt, ckpt_name)
 
