@@ -196,7 +196,7 @@ if __name__ == '__main__':
     data_module = MyDataModule()
     task_module = yd.TaskModule(
         early_stop_params={
-            'monitor': {'loss.val': 'small'},  # will save the model with the smallest loss
+            'monitor': {'loss.val': 'min'},  # will save the model with the smallest loss
             'patience': 10,  # stop if the result doesn't improve for more than 10 epochs
             'min_stop_epoch': 10,
             'max_stop_epoch': 100,

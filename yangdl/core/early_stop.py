@@ -10,7 +10,7 @@ class EarlyStop():
     """Early stop in `train` stage based on performance during the `val` stage."""
     def __init__(
         self,
-        monitor: dict[str] = {'loss.val': 'small'},
+        monitor: dict[str] = {'loss.val': 'min'},
         delta: float = 0.,
         patience: int = 10,
         min_stop_epoch: int = 10,
@@ -19,8 +19,8 @@ class EarlyStop():
         """
         Args:
             monitor: Monitored metric used to decide whether to early stop.
-                Examples: {'loss.loss': 'small'}: Model will early stop with the lowest loss.
-                {'metric.auc': 'big'}: Model will early stop with the highest auc.
+                Examples: {'loss.loss': 'min'}: Model will early stop with the lowest loss.
+                {'metric.auc': 'max'}: Model will early stop with the highest auc.
             delta: The performance will be considered better only if the result is at least `delta` better than the past.
             patience: If the performance is not better in the `val` stage for consecutive `patience` epochs,
                 `train` will be stopped.
@@ -38,20 +38,20 @@ class EarlyStop():
 
     def init(self):
         self.counter = 0
-        self.best_val = {'small': np.Inf, 'big': -np.Inf}[self.rule]
+        self.best_val = {'min': np.Inf, 'max': -np.Inf}[self.rule]
         self.stop_epoch = 0
         self.best_epoch = 0
         self.early_stop = False
 
     def __call__(self, val, epoch):
-        if self.rule == 'small':
+        if self.rule == 'min':
             if val < self.best_val - self.delta:
                 self.best_val = val
                 self.counter = 0
                 self.best_epoch = epoch
             else:
                 self.counter += 1
-        elif self.rule == 'big':
+        elif self.rule == 'max':
             if val > self.best_val + self.delta:
                 self.best_val = val
                 self.counter = 0

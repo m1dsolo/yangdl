@@ -174,7 +174,7 @@ if __name__ == '__main__':
     # use ModelModule, DataModule to initialize TaskModule
     task_module = yd.TaskModule(
         early_stop_params={
-            'monitor': {'loss.val': 'small'},
+            'monitor': {'loss.val': 'min'},
             'patience': 5,
             'min_stop_epoch': 5,
             'max_stop_epoch': 1,
