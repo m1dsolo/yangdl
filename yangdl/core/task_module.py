@@ -156,7 +156,7 @@ class TaskModule():
                 if epoch > 0:
                     train_named_metrics = self._do_epoch('train', train_loader, fold, epoch)
                     if self.save_ckpt_period > 0 and epoch > 0 and epoch % self.save_ckpt_period == 0:
-                        self._save_ckpt(fold, epoch)
+                        self._save_ckpt(fold, f'{epoch}.pt')
 
                 if val_loader:
                     val_named_metrics = self._do_epoch('val', val_loader, fold, epoch)
@@ -164,7 +164,7 @@ class TaskModule():
                     var_name, val_name = self.early_stop.metric_name.split('.')
                     self.early_stop(getattr(val_named_metrics[var_name], val_name), epoch)
                     if self.early_stop.best_epoch == epoch:
-                        self._save_ckpt(fold, None)
+                        self._save_ckpt(fold, 'best.pt')
                         self.val_named_metrics[-1] = val_named_metrics
                         if epoch > 0:
                             self.train_named_metrics[-1] = train_named_metrics
@@ -174,9 +174,11 @@ class TaskModule():
         else:
             if val_loader:
                 self.val_named_metrics[-1] = self._do_epoch('val', val_loader, fold, -1)
+        if not val_loader:
+            self._save_ckpt(fold, 'best.pt')
 
-        if train_loader:
-            self._load_ckpt(fold, None)
+        if train_loader and (test_loader or predict_loader):
+            self._load_ckpt(fold, 'best.pt')
         if test_loader:
             self.test_named_metrics[-1] = self._do_epoch('test', test_loader, fold, -1)
         if predict_loader:
@@ -228,8 +230,8 @@ class TaskModule():
 
     def _save_ckpt(
         self, 
-        fold: Optional[int] = None, 
-        epoch: Optional[int] = None
+        fold: Optional[int],
+        ckpt_fname: str,
     ) -> None:
         """Save checkpoints to path f'{env.exp_path}/ckpt/{fold}'.
 
@@ -237,16 +239,15 @@ class TaskModule():
         """
         ckpt_path = f'{env.exp_path}/ckpt'
         if fold is not None:
-            ckpt_path = os.path.join(ckpt_path, str(fold))
+            ckpt_path = f'{ckpt_path}/{fold}'
         os.makedirs(ckpt_path, exist_ok=True)
-        ckpt_name = os.path.join(ckpt_path, 'best.pt' if epoch is None else f'{epoch}.pt')
 
-        self.model_module.save_ckpt(ckpt_name)
+        self.model_module.save_ckpt(f'{ckpt_path}/{ckpt_fname}')
 
     def _load_ckpt(
         self, 
-        fold: Optional[int] = None, 
-        epoch: Optional[int] = None
+        fold: Optional[int],
+        ckpt_fname: str,
     ) -> None:
         """Load checkpoints from path f'{env.exp_path}/ckpt/{fold}'.
 
@@ -254,10 +255,9 @@ class TaskModule():
         """
         ckpt_path = f'{env.exp_path}/ckpt'
         if fold is not None:
-            ckpt_path = os.path.join(ckpt_path, str(fold))
-        ckpt_name = os.path.join(ckpt_path, 'best.pt' if epoch is None else f'{epoch}.pt')
+            ckpt_path = f'{ckpt_path}/{fold}'
 
-        self.model_module.load_ckpt(ckpt_name)
+        self.model_module.load_ckpt(f'{ckpt_path}/{ckpt_fname}')
 
     def _named_metrics2res(self, named_metrics: list[dict[str, Metric]]) -> dict:
         """Convert named_metrics to a combination of dict and list.
