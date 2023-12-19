@@ -171,11 +171,11 @@ class TaskModule():
 
                     if self.early_stop.early_stop:
                         break
+            if not val_loader:
+                self._save_ckpt(fold, 'best.pt')
         else:
             if val_loader:
                 self.val_named_metrics[-1] = self._do_epoch('val', val_loader, fold, -1)
-        if not val_loader:
-            self._save_ckpt(fold, 'best.pt')
 
         if train_loader and (test_loader or predict_loader):
             self._load_ckpt(fold, 'best.pt')

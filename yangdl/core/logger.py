@@ -18,7 +18,7 @@ class CombinationHandler(logging.Handler):
         super().__init__()
 
         self.rich_handler = RichHandler(
-            level=logging.NOTSET,
+            level=logging.INFO,
             show_path=False,
             markup=True,
             rich_tracebacks=True,
@@ -30,7 +30,7 @@ class CombinationHandler(logging.Handler):
             fmt='%(asctime)s %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         ))
-        self.file_handler.setLevel(logging.NOTSET)
+        self.file_handler.setLevel(logging.INFO)
 
     def emit(self, record):
         self.rich_handler.emit(record)
