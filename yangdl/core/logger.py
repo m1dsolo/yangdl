@@ -53,7 +53,7 @@ class Logger:
             file_name: File to save logs.
         """
         self.logger = logging.getLogger('root')
-        self.logger.setLevel(logging.NOTSET)
+        self.logger.setLevel(logging.INFO)
 
         self.handler = CombinationHandler(file_name)
         self.logger.addHandler(self.handler)
