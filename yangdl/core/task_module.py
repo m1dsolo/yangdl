@@ -8,7 +8,6 @@ from typing import Optional
 import numpy as np
 import torch
 from torch import Tensor
-from torch.cuda.amp import autocast
 from torch.utils.data import DataLoader
 
 from yangdl.core.model_module import ModelModule
@@ -224,9 +223,9 @@ class TaskModule():
     ) -> None:
         """Process one batch of data."""
         env.step = step
-        with autocast():
-            batch = self._data_to_cuda(batch)
-            return getattr(self.model_module, f'{stage}_step')(batch)
+
+        batch = self._data_to_cuda(batch)
+        return getattr(self.model_module, f'{stage}_step')(batch)
 
     def _save_ckpt(
         self, 

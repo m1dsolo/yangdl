@@ -103,6 +103,7 @@ You just need to write your own ModelModule, DataModule and TaskModule!
 
 ```python
 from torch import nn
+from torch.cuda.amp import autocast, GradScaler
 from torch.nn import functional as F
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
@@ -124,6 +125,8 @@ class MyModelModule(yd.ModelModule):
         # we have SegMetric for segmentation and RegMetric for regression
         self.metric = yd.ClsMetric(num_classes=5, properties=['acc', 'f1_score'])
 
+        self.scaler = GradScaler()
+
     def __iter__(self):
         for fold in range(1, 6):
             self.model = YourModel(num_classes=5)  # replace with your model
@@ -133,9 +136,9 @@ class MyModelModule(yd.ModelModule):
 
     def train_step(self, batch):  # your 
         loss = self._step(batch)
-        loss.backward()
-
-        self.optimizer.step()
+        self.scaler.scale(loss).backward()
+        self.scaler.step(self.optimizer)
+        self.scaler.update()
         self.optimizer.zero_grad()
 
         return {'loss': loss, 'acc': self.metric.acc}
@@ -158,13 +161,13 @@ class MyModelModule(yd.ModelModule):
         return self.train_epoch_end()
 
     def _step(self, x, y):  # train, val, test has the same forward propagation
-        logits = self.model(x)
+        with autocast():
+            logits = self.model(x)
+            loss = self.criterion(logits, y)
+            probs = F.softmax(logits, dim=1)
 
-        probs = F.softmax(logits, dim=1)
-        self.metric.update(probs, y)
-
-        loss = self.criterion(logits, y)
         self.loss.update(loss, len(x))
+        self.metric.update(probs, y)
 
         return loss
 
