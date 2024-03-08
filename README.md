@@ -36,7 +36,7 @@ Main features:
 
 Demo:
 
-![gif](./resources/demo.gif)
+![demo.gif](https://github.com/m1dsolo/yangdl/assets/74849775/c7cc1597-1ed6-4c11-adc2-3aeab8bea265)
 
 Experiment results directory:
 
