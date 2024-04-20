@@ -27,19 +27,19 @@ class ModelModule():
         """
         yield
 
-    def train_step(self, batch) -> None:
+    def train_step(self, batch) -> dict:
         """Overridable train function called at each step."""
         pass
 
-    def val_step(self, batch) -> None:
+    def val_step(self, batch) -> dict:
         """Overridable val function called at each step."""
         pass
 
-    def test_step(self, batch) -> None:
+    def test_step(self, batch) -> dict:
         """Overridable test function called at each step."""
         pass
 
-    def predict_step(self, batch) -> dict:
+    def predict_step(self, batch) -> None:
         """Overridable predict function called at each step."""
         pass
 

@@ -10,7 +10,7 @@ class EarlyStop():
     """Early stop in `train` stage based on performance during the `val` stage."""
     def __init__(
         self,
-        monitor: dict[str] = {'loss.val': 'min'},
+        monitor: dict[str, str] = {'loss.val': 'min'},
         delta: float = 0.,
         patience: int = 10,
         min_stop_epoch: int = 10,

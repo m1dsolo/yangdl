@@ -106,7 +106,9 @@ class MyModelModule(yd.ModelModule):
     def predict_epoch_end(self):
         pred_filename = f"{OUT_PATH}/{yd.env.fold}.csv"
         preds = np.concatenate(self.preds)
-        pd.DataFrame({"ImageID": range(1, 28001), "Label": preds}).to_csv(pred_filename, index=None)
+        pd.DataFrame({"ImageID": range(1, 28001), "Label": preds}).to_csv(
+            pred_filename, index=None
+        )
 
         print(f"predict fold {yd.env.fold} finished!")
 
@@ -132,11 +134,13 @@ class MyDataset(Dataset):
         self.images = images[..., None].repeat(3, axis=-1).astype("float32")
         self.labels = labels
 
-        self.transform = T.Compose([
-            T.ToTensor(),
-            T.Resize((56, 56), antialias=True),
-            T.Normalize(0.1310, 0.3085),
-        ])
+        self.transform = T.Compose(
+            [
+                T.ToTensor(),
+                T.Resize((56, 56), antialias=True),
+                T.Normalize(0.1310, 0.3085),
+            ]
+        )
 
     def __len__(self):
         return len(self.images)
@@ -172,7 +176,9 @@ class MyDataModule(yd.DataModule):
     # use to generate different DataLoader for different fold
     def train_loader(self):
         for train_idx in self.train_idxs:
-            dataset = MyDataset(self.train_images[train_idx], self.train_labels[train_idx])
+            dataset = MyDataset(
+                self.train_images[train_idx], self.train_labels[train_idx]
+            )
             yield DataLoader(
                 dataset,
                 batch_size=BATCH_SIZE,

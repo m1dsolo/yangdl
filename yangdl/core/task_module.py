@@ -46,7 +46,7 @@ class TaskModule():
         self,
         model_module: ModelModule,
         data_module: DataModule,
-        early_stop_params: Optional[dict] = None,
+        early_stop_params: dict = {},
         save_ckpt_period: int = 0,
         val_first: bool = False,
         fmt: str = '{:.4f}',
@@ -68,8 +68,7 @@ class TaskModule():
 
         self.model_module = model_module
         self.data_module = data_module
-        self.early_stop = EarlyStop(**early_stop_params) if early_stop_params is not None else None
-        self.tensorboard_logger = None
+        self.early_stop = EarlyStop(**early_stop_params)
         self.save_ckpt_period = save_ckpt_period
         self.val_first = val_first
         self.fmt = fmt
@@ -84,6 +83,8 @@ class TaskModule():
         self.train_named_metrics: list[dict[str, Metric]] = []
         self.val_named_metrics: list[dict[str, Metric]] = []
         self.test_named_metrics: list[dict[str, Metric]] = []
+
+        self.tensorboard_logger = None
 
     @staticmethod
     def _log_wrapper(func):
@@ -104,7 +105,7 @@ class TaskModule():
         return wrapper
 
     @_log_wrapper
-    def do(self) -> None:
+    def do(self):
         """Begin your multi-fold train, val, test, predict!"""
         for fold, (_, train_loader, val_loader, test_loader, predict_loader) in enumerate(zip(self.model_module, self.data_module.train_loader(), self.data_module.val_loader(), self.data_module.test_loader(), self.data_module.predict_loader()), 1):
             self.model_module.cuda()
@@ -118,15 +119,15 @@ class TaskModule():
         res = {}
         if self.train:
             train_res = self._named_metrics2res(self.train_named_metrics)
-            dict2json(apply_format_to_float(f'{metric_path}/train.json', self.fmt), train_res)
+            dict2json(f'{metric_path}/train.json', apply_format_to_float(train_res, self.fmt))
             res['train'] = train_res
         if self.val:
             val_res = self._named_metrics2res(self.val_named_metrics)
-            dict2json(apply_format_to_float(f'{metric_path}/val.json', self.fmt), val_res)
+            dict2json(f'{metric_path}/val.json', apply_format_to_float(val_res, self.fmt))
             res['val'] = val_res
         if self.test:
             test_res = self._named_metrics2res(self.test_named_metrics)
-            dict2json(apply_format_to_float(f'{metric_path}/test.json', self.fmt), test_res)
+            dict2json(f'{metric_path}/test.json', apply_format_to_float(test_res, self.fmt))
             res['test'] = test_res
         if self.early_stop is not None:
             dict2json(f'{metric_path}/early_stop.json', self.early_stop.to_dict())
@@ -135,7 +136,7 @@ class TaskModule():
 
     def _do_fold(
         self, 
-        fold: Optional[int], 
+        fold: int,
         train_loader: Optional[DataLoader] = None, 
         val_loader: Optional[DataLoader] = None, 
         test_loader: Optional[DataLoader] = None,
@@ -186,14 +187,12 @@ class TaskModule():
     def _do_epoch(
         self,
         stage: str,
-        loader: Optional[DataLoader],
+        loader: DataLoader,
         fold: int,
         epoch: int
-    ) -> Optional[dict[str, Metric]]:
+    ) -> dict[str, Metric]:
         """Process one iteration of `DataLoader`"""
         env.stage, env.fold, env.epoch = stage, fold, epoch
-        if loader is None:
-            return None
 
         with WithNone() if stage == 'train' else torch.no_grad(), EpochProgress(stage, len(loader), fold, epoch) as progress:
             getattr(self.model_module, f'{stage}_epoch_begin')()
