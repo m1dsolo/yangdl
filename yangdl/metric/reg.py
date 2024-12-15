@@ -15,7 +15,7 @@ class RegMetric(Metric):
         self.add_tensor('preds', torch.tensor([], dtype=torch.float32))
         self.add_tensor('labels', torch.tensor([], dtype=torch.float32))
 
-        self.properties = ['mae', 'rmse', 'r2']
+        self.properties = ['mae', 'rmse', 'r2', 'corr']
 
     @torch.no_grad()
     def update(self, preds: Tensor, labels: Tensor):
@@ -47,4 +47,11 @@ class RegMetric(Metric):
         b = ((self.labels - self.preds) ** 2).sum()
 
         return 1 - b / a
+
+    @property
+    def corr(self) -> Tensor:
+        """Pearson correlation coefficient."""
+        x = self.labels - self.labels.mean()
+        y = self.preds - self.preds.mean()
+        return (x * y).sum() / ((x ** 2).sum() * (y ** 2).sum()).sqrt()
 
