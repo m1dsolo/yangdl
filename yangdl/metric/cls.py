@@ -41,4 +41,3 @@ class ClsMetric(ConfusionMatrix):
                 properties = ['acc', 'auc', 'precision', 'recall', 'f1_score', 'sensitivity', 'specificity']
         super().__init__(num_classes, properties, thresh, ignore_label, eps, **kwargs)
 
-

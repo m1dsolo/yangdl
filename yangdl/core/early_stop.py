@@ -38,7 +38,7 @@ class EarlyStop():
 
     def init(self):
         self.counter = 0
-        self.best_val = {'min': np.Inf, 'max': -np.Inf}[self.rule]
+        self.best_val = {'min': np.inf, 'max': -np.inf}[self.rule]
         self.stop_epoch = 0
         self.best_epoch = 0
         self.early_stop = False
