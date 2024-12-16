@@ -88,10 +88,6 @@ torch
 ## Install
 
 ```bash
-pip install yangdl
-```
-or
-```bash
 git clone https://github.com/m1dsolo/yangdl.git
 cd yangdl
 pip install -e .
