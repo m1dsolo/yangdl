@@ -48,6 +48,7 @@ class TaskModule():
         data_module: DataModule,
         early_stop_params: dict = {},
         save_ckpt_period: int = 0,
+        reset_metric_each_fold: bool = True,
         val_first: bool = False,
         fmt: str = '{:.4f}',
         benchmark: bool = False,
@@ -60,6 +61,7 @@ class TaskModule():
             early_stop_params: Is a params dict to initialize `EarlyStop`. Refer to `EarlyStop` for more details.
             save_ckpt_period: Checkpoints will be saved every `save_ckpt_period` epochs.
                 If equal to 0, only `best.pt` will be saved.
+            reset_metric_each_fold: If set to True, metrics will be reset at the beginning of each fold.
             val_first: If set to True, before train at 1 epoch, val will be at 0 epoch.
             fmt: Control the format of output metric values.
             benchmark: Refer to `torch.backends.cudnn.benchmark` for more information.
@@ -70,6 +72,7 @@ class TaskModule():
         self.data_module = data_module
         self.early_stop = EarlyStop(**early_stop_params)
         self.save_ckpt_period = save_ckpt_period
+        self.reset_metric_each_fold = reset_metric_each_fold
         self.val_first = val_first
         self.fmt = fmt
         torch.backends.cudnn.benchmark = benchmark
@@ -210,8 +213,9 @@ class TaskModule():
             getattr(self.model_module, f'{stage}_epoch_end')()
 
             named_metrics = copy.deepcopy(self.model_module.named_metrics)
-            for metric in self.model_module.named_metrics.values():
-                metric.reset()
+            if self.reset_metric_each_fold:
+                for metric in self.model_module.named_metrics.values():
+                    metric.reset()
             return named_metrics
 
     def _do_step(
