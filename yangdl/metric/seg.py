@@ -68,3 +68,10 @@ class SegMetric(ConfusionMatrix):
 
         super().update(probs, labels)
 
+    @property
+    def ious(self):
+        ious = []
+        for idx in range(self.num_classes == 2, self.num_classes):
+            tn, fp, fn, tp = self.ravel(idx)
+            ious.append(tp / (fp + tp + fn + self.eps))
+        return torch.stack(ious, dim=0)
